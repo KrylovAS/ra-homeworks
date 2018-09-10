@@ -75,7 +75,6 @@ function createDayList() {
 }
 
 function createWeek(item) {
-  console.log(item);
   return (
     <tr>
       <td className={item[0].className}>{item[0].num}</td>

@@ -1,46 +1,43 @@
 'use strict';
 
-const date = new Date();
-const month = date.getMonth();
-const year = date.getFullYear();
-
-const daysInMonth = function(month, year) {
-  return new Date(year, month + 1, 0).getDate();
-};
-
-function createDayList() {
+function createDayList(date, year, month) {
   let daysPrevMonth;
   const arrMiddle = [],
     arrPrev = [],
     arrNext = [];
-  const dateStartMonth = new Date(year, month, 1); //первый день текущего месяца
-  const dateEndMonth = new Date(year, month + 1, 0); //последний день текущего месяца
+  const dateStartMonth = new Date(year, month, 1).getDay(); //номер первого дня текущего месяца
+  const dateEndMonth = new Date(year, month + 1, 0).getDay(); //номер последнего дня  текущего месяца
+  const dateEndMonthDay = new Date(year, month + 1, 0).getDate(); //число дней в текущем месяце
+  const dateEndPrevMonth = new Date(year, month, 0).getDate(); //число дней в предыдущем месяце
+  //получаем массив из количества дней в текущем месяце
   const getMonthDays = () => {
-    for (let i = 1; i <= daysInMonth(month, year); i++) {
+    for (let i = 1; i <= dateEndMonthDay; i++) {
       if (date.getDate() === i) {
         arrMiddle.push({ num: i, className: 'ui-datepicker-today' });
         continue;
       }
-      arrMiddle.push({ num: i, className: null }); //получаем массив из количества дней в текущем месяце
+      arrMiddle.push({ num: i, className: null });
     }
   };
+  //получаем массив последних дней предыдущего месяца
   const resuideDayPrevMonth = () => {
-    for (let i = 25; i <= daysInMonth(month - 1, year); i++) {
-      arrPrev.push({ num: i, className: 'ui-datepicker-other-month' }); //получаем массив последних дней предыдущего месяца
+    for (let i = 25; i <= dateEndPrevMonth; i++) {
+      arrPrev.push({ num: i, className: 'ui-datepicker-other-month' });
     }
   };
+  //получаем массив из первых дней следующего месяца
   const resuideDayNextMonth = () => {
     for (let i = 1; i < 7; i++) {
-      arrNext.push({ num: i, className: 'ui-datepicker-other-month' }); //получаем массив из первых дней следующего месяца
+      arrNext.push({ num: i, className: 'ui-datepicker-other-month' });
     }
   };
+  // создаем многомерный массив для динамического построениясетки дней
   const createArrDays = (...prevMonth) => {
-    // создаем многомерный массив для динамического построениясетки дней
     let listMonthDays = [...prevMonth];
     let newlistMonthDays = [];
     let quantityRow;
 
-    listMonthDays[34] === 29 || dateEndMonth.getDay() === 1 ? (quantityRow = 6) : (quantityRow = 5); //в зависимости от месяца создаем кол-во рядов
+    listMonthDays[34].num === 29 || dateEndMonth === 1 ? (quantityRow = 6) : (quantityRow = 5); //в зависимости от месяца создаем кол-во рядов
 
     for (let i = 0; i < quantityRow; i++) {
       newlistMonthDays.push(listMonthDays.splice(0, 7));
@@ -49,18 +46,18 @@ function createDayList() {
     return newlistMonthDays;
   };
 
-  if (dateEndMonth.getDay() === 0) {
+  if (dateEndMonth === 0) {
     //создаем массив дляварианта когда последний день месяца воскр
     getMonthDays();
     resuideDayPrevMonth();
-    daysPrevMonth = arrPrev.splice(-(dateStartMonth.getDay() ? dateStartMonth.getDay() - 1 : 6)); //колличество дней оставшихся в предыдущем месяце
+    daysPrevMonth = arrPrev.splice(-(dateStartMonth ? dateStartMonth - 1 : 6)); //колличество дней оставшихся в предыдущем месяце
 
     return createArrDays(...daysPrevMonth, ...arrMiddle);
-  } else if (dateStartMonth.getDay() === 1) {
+  } else if (dateStartMonth === 1) {
     //создаем массив для варианта когда первый день месяца понедельник
     getMonthDays();
     resuideDayNextMonth();
-    daysPrevMonth = arrNext.splice(dateEndMonth.getDay() ? dateEndMonth.getDay() + 1 : null);
+    daysPrevMonth = arrNext.splice(dateEndMonth ? dateEndMonth + 1 : null);
 
     return createArrDays(...arrMiddle, ...arrNext);
   } else {
@@ -68,30 +65,27 @@ function createDayList() {
     getMonthDays();
     resuideDayPrevMonth();
     resuideDayNextMonth();
-    daysPrevMonth = arrPrev.splice(-(dateStartMonth.getDay() ? dateStartMonth.getDay() - 1 : 6));
+    daysPrevMonth = arrPrev.splice(-(dateStartMonth ? dateStartMonth - 1 : 6));
 
     return createArrDays(...daysPrevMonth, ...arrMiddle, ...arrNext);
   }
 }
 
-function createWeek(item) {
+const createWeek = function(item) {
   return (
     <tr>
-      <td className={item[0].className}>{item[0].num}</td>
-      <td className={item[1].className}>{item[1].num}</td>
-      <td className={item[2].className}>{item[2].num}</td>
-      <td className={item[3].className}>{item[3].num}</td>
-      <td className={item[4].className}>{item[4].num}</td>
-      <td className={item[5].className}>{item[5].num}</td>
-      <td className={item[6].className}>{item[6].num}</td>
+      {item.map(el => (
+        <td className={el.className}>{el.num}</td>
+      ))}
     </tr>
   );
-}
+};
 
 const Calendar = ({ date }) => {
+  const month = date.getMonth();
   const day = date.getDate();
   const weekday = date.toLocaleString('ru', { weekday: 'long' });
-  const month = date.toLocaleString('ru', { month: 'long' });
+  const monthLongName = date.toLocaleString('ru', { month: 'long' });
   const monthMaterial = date
     .toLocaleString('ru', { day: 'numeric', month: 'long' })
     .split(' ')
@@ -110,7 +104,7 @@ const Calendar = ({ date }) => {
       </div>
       <div className="ui-datepicker-header">
         <div className="ui-datepicker-title">
-          <span className="ui-datepicker-month">{month}</span>
+          <span className="ui-datepicker-month">{monthLongName}</span>
           &nbsp;
           <span className="ui-datepicker-year">{year}</span>
         </div>
@@ -150,7 +144,7 @@ const Calendar = ({ date }) => {
             </th>
           </tr>
         </thead>
-        <tbody>{createDayList().map(createWeek)}</tbody>
+        <tbody>{createDayList(date, year, month).map(createWeek)}</tbody>
       </table>
     </div>
   );

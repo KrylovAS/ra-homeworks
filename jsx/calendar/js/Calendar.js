@@ -71,15 +71,13 @@ function createDayList(date, year, month) {
   }
 }
 
-const createWeek = function(item) {
-  return (
-    <tr>
-      {item.map(el => (
-        <td className={el.className}>{el.num}</td>
-      ))}
-    </tr>
-  );
-};
+const createWeek = item => (
+  <tr>
+    {item.map(el => (
+      <td className={el.className}>{el.num}</td>
+    ))}
+  </tr>
+);
 
 const Calendar = ({ date }) => {
   const month = date.getMonth();

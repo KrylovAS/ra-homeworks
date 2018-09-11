@@ -71,14 +71,6 @@ function createDayList(date, year, month) {
   }
 }
 
-const createWeek = item => (
-  <tr>
-    {item.map(el => (
-      <td className={el.className}>{el.num}</td>
-    ))}
-  </tr>
-);
-
 const Calendar = ({ date }) => {
   const month = date.getMonth();
   const day = date.getDate();
@@ -142,7 +134,17 @@ const Calendar = ({ date }) => {
             </th>
           </tr>
         </thead>
-        <tbody>{createDayList(date, year, month).map(createWeek)}</tbody>
+        <tbody>
+          {createDayList(date, year, month).map(el => {
+            return (
+              <tr>
+                {el.map(el => (
+                  <td className={el.className}>{el.num}</td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
       </table>
     </div>
   );

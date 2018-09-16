@@ -11,7 +11,6 @@ fetch('https://neto-api.herokuapp.com/etsy')
   .catch(err => console.log(err));
 
 function Listing({ items } = []) {
-  console.log(items);
   const itemList = items.map(el => {
     const currencyPrice = (code, price) => {
       switch (code) {

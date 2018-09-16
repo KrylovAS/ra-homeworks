@@ -1,6 +1,7 @@
 'use strict';
 
 function MessageHistory({ list = [] }) {
+  console.log(list);
   const messageBlock = list.map(message => {
     const { id, from, type, ...data } = message;
 
@@ -16,3 +17,7 @@ function MessageHistory({ list = [] }) {
 
   return <ul>{messageBlock}</ul>;
 }
+
+// MessageHistory.defaultProps = {
+//   list: [],
+// };

@@ -10,21 +10,23 @@ fetch('https://neto-api.herokuapp.com/etsy')
   .then(res => getItems(res))
   .catch(err => console.log(err));
 
-function Listing({ items } = []) {
-  const itemList = items.map(el => {
-    const currencyPrice = (code, price) => {
-      switch (code) {
-        case 'USD':
-          return `$ ${price}`;
-        case 'EUR':
-          return `€ ${price}`;
-        default:
-          return `${price} ${code}`;
-      }
-    };
-    const currientQatnity = quantity => {
-      return (quantity <= 10 && 'low') || (quantity <= 20 && 'medium') || 'high';
-    };
+const currencyPrice = (code, price) => {
+  switch (code) {
+    case 'USD':
+      return `$ ${price}`;
+    case 'EUR':
+      return `€ ${price}`;
+    default:
+      return `${price} ${code}`;
+  }
+};
+
+const currientQatnity = quantity => {
+  return (quantity <= 10 && 'low') || (quantity <= 20 && 'medium') || 'high';
+};
+  
+function Listing({ items }) {
+  const itemList = items.map(el => {    
     return (
       <div key={el.listing_id} className="item">
         <div className="item-image">
@@ -42,13 +44,17 @@ function Listing({ items } = []) {
       </div>
     );
   });
+
+
   return <div className="item-list">{itemList}</div>;
 }
+
+Listing.defaultProps = {
+  items: [],
+};
 
 function getItems(items) {
   ReactDOM.render(<Listing items={items} />, document.getElementById('root'));
 }
 
-// Listing.defaultProps = {
-//   items: [],
-// };
+

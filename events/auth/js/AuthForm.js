@@ -1,67 +1,45 @@
 'use strict';
 
-'use strict';
+const formValidate = (e) => {
+	let regExp;
+	if (e.target.name === 'email') {
+		regExp = /[^\w\d@_\.-]/i;
+	}
+	if (e.target.name === 'password') {
+		regExp = /[^\w\d_]/i;
+	}
+	e.target.value = e.target.value.replace(regExp, '');
+};
 
-class AuthForm extends React.Component {
-    render() {
-        const sendData = event => {
-            event.preventDefault();
-            const user = {};
-            Array.from(document.forms[0]).forEach(element => {
-                if(element.value) {
-                    if(element.type === 'text') {
-                        return user.name = element.value;
-                    }
-                    user[element.type] = element.value;
-                }
-            })
-            if(this.props.onAuth && typeof this.props.onAuth === 'function') {
-                this.props.onAuth(user);
-            }
-        }
+function AuthForm({ onAuth }) {
+	const getForm = (e) => {
+		e.preventDefault();
+		const user = {
+			name: e.target.name.value,
+			email: e.target.email.value,
+			password: e.target.password.value,
+		};
 
-        function formatInput(event, type) {
-            if (type === 'email') {
-                event.currentTarget.value = event.currentTarget.value.replace(/[^A-Za-z0-9_@.-]/g,'');
-            } else {
-                event.currentTarget.value = event.currentTarget.value.replace(/[^A-Za-z0-9_@]/g,'');
-            }
-        }
-        return(
-            <form className="ModalForm" action="/404/auth/" method="POST">
-                <Input required={true} type='text' name='Имя' onSubmit={sendData} onAuth={this.props.onAuth}/>
-                <Input required={false} type='email' name='Электронная почта' onSubmit={sendData} onChange={formatInput} onAuth={this.props.onAuth}/>
-                <Input required={true} type='password' name='Пароль' onSubmit={sendData} onChange={formatInput} onAuth={this.props.onAuth}/>
-                <Button type='submit' onClick={sendData}/>
-            </form>
-        )
-    }
-}
-
-class Input extends React.Component {
-    render() {
-        const required = this.props.required ? true : false;
-        const onChange = this.props.onChange ? (event) => this.props.onChange(event, this.props.type) : false;
-        return(
-            <div className='Input'>
-                <input required={required} 
-                       type={this.props.type} 
-                       placeholder={this.props.name} 
-                       onSubmit={event => this.props.onSubmit(event)} 
-                       onChange={onChange}/>
-                <label></label>
-            </div>
-        );
-    }
-}
-
-class Button extends React.Component {
-    render() {
-        return(
-            <button type={this.props.type} onClick={this.props.onClick}>
-                <span>Войти</span>
-                <i class="fa fa-fw fa-chevron-right"></i>
-            </button>
-        );
-    }
+		typeof onAuth ? onAuth(user) : null;
+	};
+	return (
+		<form className='ModalForm' action='/404/auth/' method='POST' onSubmit={getForm}>
+			<div className='Input'>
+				<input required type='text' placeholder='Имя' name='name' />
+				<label />
+			</div>
+			<div className='Input'>
+				<input type='email' placeholder='Электронная почта' name='email' onChange={formValidate} />
+				<label />
+			</div>
+			<div className='Input'>
+				<input required type='password' placeholder='Пароль' name='password' onChange={formValidate} />
+				<label />
+			</div>
+			<button type='submit'>
+				<span>Войти</span>
+				<i className='fa fa-fw fa-chevron-right' />
+			</button>
+		</form>
+	);
 }

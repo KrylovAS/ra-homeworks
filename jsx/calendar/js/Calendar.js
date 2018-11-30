@@ -9,58 +9,82 @@ const daysInMonth = function (month, year) {
 }
 
 function createDayList() {
+  
   let daysPrevMonth;
-  const  arr = [], arrPrev = [], arrNext = [];
-  const cell = 35; 
-  const maxCellRow = 7; //максимальное кол-во ячеек в строке;
-  const remainderDay = (cell - daysInMonth(month, year)); //получаем оставшиеся дни из предыдущего месяца которые поместятся в первуюстроку
-  const dayPrevMonth =  daysInMonth(month - 1, year) - maxCellRow;
-  const dateStartMonth = new Date(year, month, 1);
-  const dateEndMonth = new Date(year, month + 1, 0);  
+  const arrMiddle = [], arrPrev = [], arrNext = [];    
+  const dateStartMonth = new Date(year, month, 1);  //первый день текущего месяца
+  const dateEndMonth = new Date(year, month + 1, 0);  //последний день текущего месяца
   const getMonthDays =  () => {
     for (let i = 1; i <= daysInMonth(month, year); i++){
         
       if(date.getDate() === i) {
-        arr.push({num: i, className: 'ui-datepicker-today'});
+        arrMiddle.push({num: i, className: 'ui-datepicker-today'});
         continue;
       } 
-      arr.push({num: i, className: null})  //получаем массив из количества дней в текущем месяце
+      arrMiddle.push({num: i, className: null})  //получаем массив из количества дней в текущем месяце
     } 
   };
   const resuideDayPrevMonth = () => {
-    for (let i = dayPrevMonth; i <= daysInMonth(month - 1, year); i++){
-      arrPrev.push({num: i, className: 'ui-datepicker-other-month'}) //получаем массив из оставшихся дней   предыдущего месяца
+    for (let i = 25; i <= daysInMonth(month - 1, year); i++){
+      arrPrev.push({num: i, className: 'ui-datepicker-other-month'}) //получаем массив последних дней предыдущего месяца
     };
   };
   const resuideDayNextMonth = () => {
-    for (let i = 1; i < maxCellRow; i++){
+    for (let i = 1; i < 7; i++){
       arrNext.push({num: i, className: 'ui-datepicker-other-month'}) //получаем массив из первых дней следующего месяца
     }
   }
-  if(dateEndMonth.getDay() === 0) {
-    getMonthDays();    
-    resuideDayPrevMonth();    
-    daysPrevMonth = arrPrev.splice(-remainderDay) //колличество дней оставшихся в предыдущем месяце
+  const createArrDays = (...prevMonth) => { // создаем многомерный массив для динамического построениясетки дней
+    let listMonthDays = [...prevMonth];    
+    let newlistMonthDays=[];
+    let quantityRow;
+
+    (listMonthDays[34] === 29 || dateEndMonth.getDay() === 1)? quantityRow = 6: quantityRow = 5; //в зависимости от месяца создаем кол-во рядов
     
-    return  [...daysPrevMonth, ...arr];
+    for(let i = 0; i <  quantityRow; i++){      
+      newlistMonthDays.push( listMonthDays.splice(0, 7))
+    } 
+            
+    return newlistMonthDays
   }
   
-  if(dateStartMonth.getDay() === 1) {
+  if(dateEndMonth.getDay() === 0) { //создаем массив дляварианта когда последний день месяца воскр
+    getMonthDays();    
+    resuideDayPrevMonth();    
+    daysPrevMonth = arrPrev.splice(-(dateStartMonth.getDay()? dateStartMonth.getDay() -1 : 6)) //колличество дней оставшихся в предыдущем месяце
+
+    return createArrDays(...daysPrevMonth, ...arrMiddle );    
+    
+  }else  if(dateStartMonth.getDay() === 1) { //создаем массив для варианта когда первый день месяца понедельник
     getMonthDays();
     resuideDayNextMonth();     
-    daysPrevMonth = arrNext.splice(remainderDay);
-
-    return [...arr, ...arrNext];
-  }
-
-  if(dateStartMonth.getDay() !== 1 &&  dateEndMonth.getDay() !== 0) {
+    daysPrevMonth = arrNext.splice(dateEndMonth.getDay()? dateEndMonth.getDay() + 1 : null); 
+    
+    return createArrDays(...arrMiddle, ...arrNext);
+    
+  }else  { //массив для всех остальных вариантов
     getMonthDays();    
     resuideDayPrevMonth();
-    resuideDayNextMonth();   
-    daysPrevMonth = arrPrev.splice(-(dateStartMonth.getDay()? dateStartMonth.getDay() -1 : 6)); 
+    resuideDayNextMonth();    
+    daysPrevMonth = arrPrev.splice(-(dateStartMonth.getDay()? dateStartMonth.getDay() - 1 : 6));    
     
-    return [...daysPrevMonth, ...arr, ...arrNext];  
+    return createArrDays(...daysPrevMonth, ...arrMiddle, ...arrNext);   
   } 
+}
+
+function createWeek(item) {
+  console.log(item)
+  return (
+    <tr>      
+      <td className={item[0].className}>{item[0].num}</td>
+      <td className={item[1].className}>{item[1].num}</td>
+      <td className={item[2].className}>{item[2].num}</td>
+      <td className={item[3].className}>{item[3].num}</td>
+      <td className={item[4].className}>{item[4].num}</td>
+      <td className={item[5].className}>{item[5].num}</td>
+      <td className={item[6].className}>{item[6].num}</td>            
+    </tr>    
+  );
 }
 
 const Calendar = ({date}) => {    
@@ -105,81 +129,17 @@ const Calendar = ({date}) => {
             <th scope="col" title="Суббота">Сб</th>
             <th scope="col" title="Воскресенье">Вс</th>
           </tr>
-        </thead>        
-        {getItemRow(createDayList())}       
+        </thead>   
+        <tbody>       
+        {createDayList().map(createWeek)}
+        </tbody>
       </table>
     </div>
   )
 }
 
-const getItemRow = function (data) {  
-  return (    
-    <tbody>
-      <tr>
-        <td className={data[0].className}>{data[0].num}</td>
-        <td className={data[1].className}>{data[1].num}</td>
-        <td className={data[2].className}>{data[2].num}</td>
-        <td className={data[3].className}>{data[3].num}</td>
-        <td className={data[4].className}>{data[4].num}</td>
-        <td className={data[5].className}>{data[5].num}</td>
-        <td className={data[6].className}>{data[6].num}</td>
-      </tr>
-      <tr>
-        <td className={data[7].className}>{data[7].num}</td>
-        <td className={data[8].className}>{data[8].num}</td>
-        <td className={data[9].className}>{data[9].num}</td>
-        <td className={data[10].className}>{data[10].num}</td>
-        <td className={data[11].className}>{data[11].num}</td>
-        <td className={data[12].className}>{data[12].num}</td>
-        <td className={data[13].className}>{data[13].num}</td>
-      </tr>
-      <tr>
-        <td className={data[14].className}>{data[14].num}</td>
-        <td className={data[15].className}>{data[15].num}</td>
-        <td className={data[16].className}>{data[16].num}</td>
-        <td className={data[17].className}>{data[17].num}</td>
-        <td className={data[18].className}>{data[18].num}</td>
-        <td className={data[19].className}>{data[19].num}</td>
-        <td className={data[20].className}>{data[20].num}</td>
-      </tr>
-      <tr>
-        <td className={data[21].className}>{data[21].num}</td>
-        <td className={data[22].className}>{data[22].num}</td>
-        <td className={data[23].className}>{data[23].num}</td>
-        <td className={data[24].className}>{data[24].num}</td>
-        <td className={data[25].className}>{data[25].num}</td>
-        <td className={data[26].className}>{data[26].num}</td>
-        <td className={data[27].className}>{data[27].num}</td>
-      </tr>
-      <tr>
-        <td className={data[28].className}>{data[28].num}</td>
-        <td className={data[29].className}>{data[29].num}</td>
-        <td className={data[30].className}>{data[30].num}</td>
-        <td className={data[31].className}>{data[31].num}</td>
-        <td className={data[32].className}>{data[32].num}</td>
-        <td className={data[33].className}>{data[33].num}</td>
-        <td className={data[34].className}>{data[34].num}</td>
-      </tr> 
-        
-       {(createDayList()[34].num === 29 ||
-         createDayList()[34].num === daysInMonth(month, year)-1 )?
-         addWeek(createDayList()) : null
-       }  
-    </tbody>
-  )
-}
 
-const addWeek = function (data) {  
-  return (
-    <tr>
-        <td className={data[35].className}>{data[35].num}</td>
-        <td className={data[36].className}>{data[36].num}</td>
-        <td className={data[37].className}>{data[37].num}</td>
-        <td className={data[38].className}>{data[38].num}</td>
-        <td className={data[39].className}>{data[39].num}</td>
-        <td className={data[40].className}>{data[40].num}</td>
-        <td className={data[41].className}>{data[41].num}</td>
-    </tr>
-  )
-}
+
+
+
 
